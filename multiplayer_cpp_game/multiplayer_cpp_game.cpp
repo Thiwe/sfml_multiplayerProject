@@ -1,18 +1,18 @@
 #include <iostream>
 #include <filesystem>
 #include <SFML/Graphics.hpp>
-
-#include "Player.h"
+#include <vector>
+#include "Entity.h"
 #include "Command.h"
 
 
 namespace fs = std::filesystem;
-
+sf::Vector2u screenSize( 1200, 900 );
 
 int main()
 {
     
-    sf::RenderWindow window(sf::VideoMode({ 2000, 1800 }), "Astroids Game",
+    sf::RenderWindow window(sf::VideoMode(screenSize), "Astroids Game",
         sf::Style::Close | sf::Style::Titlebar);
     sf::Clock clock;
 
@@ -30,9 +30,8 @@ int main()
     // Create a graphical text to display
     //const sf::Font font("arial.ttf");
     //sf::Text text(font, "Hello SFML", 50);
-
-    Player player;
-    std::unique_ptr<Command> command = nullptr;
+    std::vector<Entity*> entities{};
+    entities.push_back(new Player());
 
     while (window.isOpen())
     {
@@ -41,38 +40,23 @@ int main()
         float deltaTime = clock.restart().asSeconds();
         while (const std::optional event = window.pollEvent())
         {
-            if (event->is<sf::Event::Closed>())
+            if (event->is<sf::Event::Closed>() || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
                 window.close();
 
-            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-            {
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-
-                    command = std::make_unique<MoveCommand>();
-                    
-                }
-                    
-                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
-                    command = std::make_unique<MoveCommand>(sf::Vector2f(1, 0));
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
-                    command = std::make_unique<MoveCommand>(sf::Vector2f(0, 1));
-                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
-                    command = std::make_unique<MoveCommand>(sf::Vector2f(0, -1));
-
-                if (command)
-                    command->execute(player, deltaTime);
-            }
-
-
+      
         }
-        
-
         transform.rotate(sf::Angle(sf::degrees(deltaTime * 10)));
+        
         window.clear();
-        player.Draw(window);
+        for (auto et : entities) {
+            et->update(deltaTime);
+            et->render(window);
+        }
+
         //draw the test shape that is moving to know the update is working
         window.draw(sprite, transform);
         // end draw test shape
+        
         window.display();
     }
 

@@ -137,11 +137,11 @@
   <ItemGroup>
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="multiplayer_cpp_game.cpp" />
-    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Entity.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Command.h" />
-    <ClInclude Include="Player.h" />
+    <ClInclude Include="Entity.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
