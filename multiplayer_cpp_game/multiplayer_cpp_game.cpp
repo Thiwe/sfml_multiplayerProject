@@ -26,10 +26,6 @@ int main()
     }
     sf::Sprite sprite(texture);
 
-
-    // Create a graphical text to display
-    //const sf::Font font("arial.ttf");
-    //sf::Text text(font, "Hello SFML", 50);
     std::vector<Entity*> entities{};
     entities.push_back(new Player());
 

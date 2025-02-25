@@ -12,14 +12,18 @@ class Entity {
 public:
     virtual void update(float deltaTime) = 0;
     virtual void render(sf::RenderWindow& window) = 0;
+    void wrapAround(sf::Vector2u screenSize_);
+
 };
 
+
+//========== PLAYER CLASS ============//
 class Player : public Entity {
 public:
     Player();
 
-    void render(sf::RenderWindow& window);
-    void update(float deltaTime);
+    void render(sf::RenderWindow& window) override;
+    void update(float deltaTime) override;
     void wrapAround(sf::Vector2u screenSize_);
 private:
     sf::Angle torque;

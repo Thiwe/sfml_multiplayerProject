@@ -5,6 +5,22 @@
 
 constexpr double M_PI = 3.14159265;
 
+void Entity::wrapAround(sf::Vector2u screenSize_) {
+    if (position.x > screenSize_.x) {
+        position.x = 0; // Wrap to left side
+    }
+    else if (position.x < 0) {
+        position.x = screenSize_.x; // Wrap to right side
+    }
+
+    if (position.y > screenSize_.y) {
+        position.y = 0; // Wrap to top side
+    }
+    else if (position.y < 0) {
+        position.y = screenSize_.y; // Wrap to bottom side
+    }
+}
+
 Player::Player()
     : sprite(texture), position(500.f, 500.f), angle(sf::radians(0)), torque(sf::radians(3))
 {
@@ -29,22 +45,6 @@ void Player::render(sf::RenderWindow& window) {
     transform.translate(position).rotate(angle);
 
     window.draw(sprite, transform);
-}
-
-void Player::wrapAround(sf::Vector2u screenSize_) {
-    if (position.x > screenSize_.x) {
-        position.x = 0; // Wrap to left side
-    }
-    else if (position.x < 0) {
-        position.x = screenSize_.x; // Wrap to right side
-    }
-
-    if (position.y > screenSize_.y) {
-        position.y = 0; // Wrap to top side
-    }
-    else if (position.y < 0) {
-        position.y = screenSize_.y; // Wrap to bottom side
-    }
 }
 
 /*
