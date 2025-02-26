@@ -10,9 +10,20 @@ _CMATH_
 
 class Entity {
 public:
+    Entity() = default; // Default constructor
+
     virtual void update(float deltaTime) = 0;
     virtual void render(sf::RenderWindow& window) = 0;
     void wrapAround(sf::Vector2u screenSize_);
+protected:
+    sf::Angle torque;
+    sf::Texture texture;  // Must be a member variable!
+    sf::Sprite sprite;
+    sf::Vector2f position;
+    sf::Angle angle;
+    sf::Vector2f dir;
+    sf::Vector2f movement = {};
+    sf::Vector2f velocity = { 0.f, 0.f };
 
 };
 
@@ -24,18 +35,9 @@ public:
 
     void render(sf::RenderWindow& window) override;
     void update(float deltaTime) override;
-    void wrapAround(sf::Vector2u screenSize_);
 private:
-    sf::Angle torque;
-    sf::Texture texture;  // Must be a member variable!
-    sf::Sprite sprite;
-    sf::Vector2f position;
-    sf::Angle angle;
-    sf::Vector2f dir;
-    sf::Vector2f movement = {};
-    sf::Vector2f velocity = { 0.f, 0.f };
     float drag = 0.7f; // Slowdown effect (1 = no slowdown, 0 = instant stop)
     float speed = 300.f; // Speed when moving
-    float SpriteScale = 0.2; // Speed when moving
+    float SpriteScale = 0.4; // Speed when moving
 };
 

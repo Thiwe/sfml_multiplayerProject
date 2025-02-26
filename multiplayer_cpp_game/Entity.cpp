@@ -21,9 +21,11 @@ void Entity::wrapAround(sf::Vector2u screenSize_) {
     }
 }
 
-Player::Player()
-    : sprite(texture), position(500.f, 500.f), angle(sf::radians(0)), torque(sf::radians(3))
+Player::Player() 
 {
+    position = sf::Vector2f(500.f, 500.f);
+    angle = sf::Angle(sf::radians(0));
+    torque = sf::Angle(sf::radians(3));
     // Load texture from file
     if (!texture.loadFromFile("../sprites/blueship1.png")) {
         // Handle error (e.g., log or throw)
