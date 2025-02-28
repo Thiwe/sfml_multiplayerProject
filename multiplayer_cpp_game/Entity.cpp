@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include "Entity.h"
 
@@ -5,9 +7,57 @@
 
 constexpr double M_PI = 3.14159265;
 
-Player::Player()
-    : sprite(texture), position(500.f, 500.f), angle(sf::radians(0)), torque(sf::radians(3))
+
+
+/*=======================BASE CLASSES============================*/
+//npote, sprite is init to empty texture as it has no default, it must be init here.
+Entity::Entity() :
+    position(0.f, 0.f),
+    angle(sf::degrees(0.f)),
+    dir(0.f, 0.f),
+    SpriteScale(1.f),
+    sprite(texture),
+    speed(300.f),
+    drag(0.7f)    
 {
+    // Additional initialization if needed
+}
+
+// call parent class constructor
+PhysicsEntity::PhysicsEntity() : Entity() {
+    // Future physics-specific initialization will go here
+}
+
+
+/*=======================COMMON FUNCTIONS============================*/
+void Entity::wrapAround(sf::Vector2u screenSize_) {
+    if (position.x > screenSize_.x) {
+        position.x = 0; // Wrap to left side
+    }
+    else if (position.x < 0) {
+        position.x = screenSize_.x; // Wrap to right side
+    }
+
+    if (position.y > screenSize_.y) {
+        position.y = 0; // Wrap to top side
+    }
+    else if (position.y < 0) {
+        position.y = screenSize_.y; // Wrap to bottom side
+    }
+}
+
+
+
+/*======================PLAYER===========================*/
+Player::Player()
+    : PhysicsEntity(), // Call base class constructor
+    torque(sf::Angle(sf::radians(3)))
+{
+    position = sf::Vector2f(500.f, 500.f); // Initialize position
+    angle = sf::Angle(sf::radians(0));
+    drag = 0.7f;
+    speed = 300.f;
+    
     // Load texture from file
     if (!texture.loadFromFile("../sprites/blueship1.png")) {
         // Handle error (e.g., log or throw)
@@ -31,29 +81,6 @@ void Player::render(sf::RenderWindow& window) {
     window.draw(sprite, transform);
 }
 
-void Player::wrapAround(sf::Vector2u screenSize_) {
-    if (position.x > screenSize_.x) {
-        position.x = 0; // Wrap to left side
-    }
-    else if (position.x < 0) {
-        position.x = screenSize_.x; // Wrap to right side
-    }
-
-    if (position.y > screenSize_.y) {
-        position.y = 0; // Wrap to top side
-    }
-    else if (position.y < 0) {
-        position.y = screenSize_.y; // Wrap to bottom side
-    }
-}
-
-/*
-i need to move the player in the same direction she was moving at the release of a button. 
-movement is currently a change in position based on angle. i coudl try to move it based on vectors and 
-physics. that would mean
-
-f=ma
-*/
 void Player::update(float deltaTime) {
     
     
@@ -111,4 +138,66 @@ void Player::update(float deltaTime) {
     //std::cout.clear();
 
     wrapAround(sf::Vector2u(1200, 900)); // call wrap function after updating position
+}
+
+
+
+/*======================PROJECTILES===========================*/
+
+baseProjectile::baseProjectile() : PhysicsEntity(), lifetime(7.0f)
+{
+
+}
+
+void baseProjectile::render(sf::RenderWindow& window)
+{
+
+}
+
+void baseProjectile::update(float deltaTime)
+{
+    movement.y = cos(angle.asRadians()) * speed;
+    movement.x = sin(angle.asRadians()) * speed;
+
+    // Apply drag when no keys are pressed
+    velocity.x *= drag;
+    velocity.y *= drag;
+
+    // Update position
+    position.x += velocity.x * SpriteScale;
+    position.y += velocity.y * SpriteScale;
+}
+
+
+float baseProjectile::getLifetime()
+{
+    return lifetime;
+}
+
+bullet::bullet(sf::Vector2f spawnPos, sf::Angle spawnAngle, sf::Vector2f spawnVel, sf::Vector2f spriteScale_) :
+    baseProjectile()
+{
+    position = spawnPos; // Initialize position
+    angle = spawnAngle;
+    velocity = spawnVel;
+
+    // Load texture from file
+    if (!texture.loadFromFile("../arcaneMagicProjectile/02/Arcane_Effect_1.png")) {
+        // Handle error (e.g., log or throw)
+        std::cout << "texture not loaded!" << std::endl;
+    }
+    // Assign texture to sprite
+    sprite = sf::Sprite(texture);
+    std::cout << "texture loaded!" << std::endl;
+
+    // Optionally, set origin, scale, or other properties
+    sprite.setPosition({ static_cast<float>(-75.5 * SpriteScale),
+                     static_cast<float>(-143.5 * SpriteScale) });
+    sprite.setRotation(sf::Angle(sf::radians(0)));
+    sprite.setScale(spriteScale_);
+}
+
+bullet::~bullet()
+{
+
 }
