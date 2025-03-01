@@ -1,12 +1,13 @@
+#pragma once
+
 #include <cmath>
 #include <filesystem>
 #include <memory>
 #include <SFML/Graphics.hpp>
 #include <ctime> 
+#include "GameManager.h"
 
-
-#pragma once
-_CMATH_
+class GameManager;
 
 class Entity {
 public:
@@ -25,6 +26,9 @@ public:
     void setPosition(sf::Vector2f newPos) { position = newPos; }
     void setVelocity(sf::Vector2f newVel) { velocity = newVel; }
 
+    // Set reference to game manager
+    void setGameManager(GameManager* manager) { gameManager = manager; }
+
 protected:
     sf::Texture texture;
     sf::Sprite sprite;
@@ -36,7 +40,7 @@ protected:
     float SpriteScale = 0.4; // Speed when moving
     float speed = 300.f; // Speed when moving
     float drag = 0.7f; // Slowdown effect (1 = no slowdown, 0 = instant stop)
-
+    GameManager* gameManager = nullptr;
 };
 
 class PhysicsEntity : public Entity {
@@ -55,9 +59,16 @@ public:
 
     virtual void render(sf::RenderWindow& window) override;
     virtual void update(float deltaTime) override;
+
+    void fire();
+
+    bool getCanFire() const { return timeSinceLastShot >= fireRate; }
+
 private:
-    
     sf::Angle torque; // Declare torque here
+    float fireRate = 0.3f;
+    float timeSinceLastShot = 0.0f;
+
 
 };
 
@@ -67,16 +78,21 @@ public:
 
     void render(sf::RenderWindow& window) override;
     void update(float deltaTime) override;
-    float getLifetime();
+    float getLifetime() const { return lifetime; }
+    float getSpeed() const { return speed; }
 
 protected:
-    float lifetime = 7.0f;
+    float lifetime = 0.4f;
+    float speed = 10.f; // Speed when moving
 };
 
 class bullet : public baseProjectile {
 public:
     bullet(sf::Vector2f spawnPos, sf::Angle spawnAngle, sf::Vector2f spawnVel, sf::Vector2f spriteScale_);
     ~bullet();
-private:
+    float getSpeed() { return speed; }
 
+    //void render(sf::RenderWindow& window) override;
+private:
+    float speed = 10.f; // Speed when moving
 };

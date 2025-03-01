@@ -4,19 +4,25 @@
 #include "Entity.h"
 #include <SFML/Graphics.hpp>
 
-
+class Entity;
+class baseProjectile;
 
 class GameManager
 {
+
 public:
 	GameManager(sf::Vector2u screenSize, sf::RenderWindow& window);
-	~GameManager() = default;
+	~GameManager();
+
+	
 
 	void initialize();
 	void handleInput();
 	void update(float deltaTime_);
 	void render();
 
+	// Bullet management with object pooling
+	void spawnProjectile(sf::Vector2f bulletPos, sf::Angle angle, sf::Vector2f bulletVel);
 
 	// Game state
 	bool isRunning() const { return running; }
@@ -25,6 +31,7 @@ public:
 private:
     // Game objects
     std::vector<Entity*> entities;
+	std::vector<baseProjectile*> projectiles;    // Active bullets
 
     // Game state
     bool running;

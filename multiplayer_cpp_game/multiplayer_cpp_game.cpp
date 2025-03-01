@@ -24,11 +24,11 @@ int main()
     {
         //restart() returns a time object which ahve asSeconds as member
         float deltaTime = clock.restart().asSeconds();
-
+        window.clear();
         gameManager.handleInput();
         gameManager.update(deltaTime);
         gameManager.render();
-
+        window.display();
         
     }
 

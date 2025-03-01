@@ -10,7 +10,7 @@ constexpr double M_PI = 3.14159265;
 
 
 /*=======================BASE CLASSES============================*/
-//npote, sprite is init to empty texture as it has no default, it must be init here.
+//note, sprite is init to empty texture as it has no default, it must be init here.
 Entity::Entity() :
     position(0.f, 0.f),
     angle(sf::degrees(0.f)),
@@ -18,9 +18,10 @@ Entity::Entity() :
     SpriteScale(1.f),
     sprite(texture),
     speed(300.f),
-    drag(0.7f)    
+    drag(0.7f) 
+    
 {
-    // Additional initialization if needed
+
 }
 
 // call parent class constructor
@@ -57,6 +58,7 @@ Player::Player()
     angle = sf::Angle(sf::radians(0));
     drag = 0.7f;
     speed = 300.f;
+    SpriteScale = 0.25f;
     
     // Load texture from file
     if (!texture.loadFromFile("../sprites/blueship1.png")) {
@@ -77,6 +79,7 @@ Player::Player()
 void Player::render(sf::RenderWindow& window) {
     sf::Transform transform;
     transform.translate(position).rotate(angle);
+    wrapAround(sf::Vector2u(1200, 900)); // call wrap function after updating position
 
     window.draw(sprite, transform);
 }
@@ -109,8 +112,6 @@ void Player::update(float deltaTime) {
     //handle rotations
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q)) {
         angle -= torque * deltaTime;
-        std::cout << " called from input handler " << std::endl;
-
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E)) {
@@ -122,6 +123,15 @@ void Player::update(float deltaTime) {
         velocity = movement * deltaTime;
     }
 
+    // Handle firing input
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && getCanFire()) {
+        fire();
+        timeSinceLastShot = 0.0f;
+    }
+
+    // Update firing cooldown
+    timeSinceLastShot += deltaTime;
+
     // Apply drag when no keys are pressed
     velocity.x *= drag;
     velocity.y *= drag;
@@ -130,27 +140,49 @@ void Player::update(float deltaTime) {
     position.x += velocity.x * SpriteScale;
     position.y += velocity.y * SpriteScale;
 
-
-
-    std::cout << "movement is: "<< movement.x << ", " << movement.y << std::endl;
+    //std::cout << "movement is: "<< movement.x << ", " << movement.y << std::endl;
     //std::cout << "velocity is: "<< velocity.x << ", " << velocity.y << std::endl;
     //std::cout << "movement is: "<< position.x << ", " << position.y << std::endl;
     //std::cout.clear();
 
-    wrapAround(sf::Vector2u(1200, 900)); // call wrap function after updating position
+}
+
+void Player::fire()
+{
+    if (!gameManager) return;
+
+    //calculate bullet spawn position (offset from plater center)
+    float offsetDistance = 50.f;
+    sf::Vector2f bulletPos = position;
+    bulletPos.x += offsetDistance * sin(angle.asRadians());
+    bulletPos.y -= offsetDistance * cos(angle.asRadians());
+
+    //calculate bullet velocity
+    float bulletSpeed = 0.4f;
+    sf::Vector2f bulletVel;
+    bulletVel.x = -bulletSpeed * sin(angle.asRadians());
+    bulletVel.y = bulletSpeed * cos(angle.asRadians());
+
+    // Tell game manager to spawn the bullet
+    gameManager->spawnProjectile(bulletPos, angle, bulletVel);
 }
 
 
 
 /*======================PROJECTILES===========================*/
 
-baseProjectile::baseProjectile() : PhysicsEntity(), lifetime(7.0f)
+baseProjectile::baseProjectile() : PhysicsEntity(), speed()
 {
 
 }
 
 void baseProjectile::render(sf::RenderWindow& window)
 {
+    sf::Transform transform;
+    transform.translate(position).rotate(angle);
+    wrapAround(sf::Vector2u(1200, 900)); // call wrap function after updating position
+
+    window.draw(sprite, transform);
 
 }
 
@@ -160,18 +192,17 @@ void baseProjectile::update(float deltaTime)
     movement.x = sin(angle.asRadians()) * speed;
 
     // Apply drag when no keys are pressed
-    velocity.x *= drag;
-    velocity.y *= drag;
+    //velocity.x *= drag;
+    //velocity.y *= drag;
 
     // Update position
     position.x += velocity.x * SpriteScale;
     position.y += velocity.y * SpriteScale;
-}
-
-
-float baseProjectile::getLifetime()
-{
-    return lifetime;
+    
+    lifetime -= deltaTime;
+    if ((getLifetime()) < 0) {
+        delete this;
+    }
 }
 
 bullet::bullet(sf::Vector2f spawnPos, sf::Angle spawnAngle, sf::Vector2f spawnVel, sf::Vector2f spriteScale_) :
@@ -182,7 +213,7 @@ bullet::bullet(sf::Vector2f spawnPos, sf::Angle spawnAngle, sf::Vector2f spawnVe
     velocity = spawnVel;
 
     // Load texture from file
-    if (!texture.loadFromFile("../arcaneMagicProjectile/02/Arcane_Effect_1.png")) {
+    if (!texture.loadFromFile("../sprites/arcaneMagicProjectile/02/Arcane_Effect_1.png")) {
         // Handle error (e.g., log or throw)
         std::cout << "texture not loaded!" << std::endl;
     }
@@ -191,13 +222,19 @@ bullet::bullet(sf::Vector2f spawnPos, sf::Angle spawnAngle, sf::Vector2f spawnVe
     std::cout << "texture loaded!" << std::endl;
 
     // Optionally, set origin, scale, or other properties
-    sprite.setPosition({ static_cast<float>(-75.5 * SpriteScale),
-                     static_cast<float>(-143.5 * SpriteScale) });
-    sprite.setRotation(sf::Angle(sf::radians(0)));
-    sprite.setScale(spriteScale_);
+    //sprite.setPosition({ static_cast<float>(-75.5 * SpriteScale),
+    //                 static_cast<float>(-143.5 * SpriteScale) });
+    //sprite.setRotation(sf::Angle(sf::radians(0)));
+    //sprite.setScale(sf::Vector2f{4,4});
 }
 
 bullet::~bullet()
 {
 
 }
+//
+//void bullet::render(sf::RenderWindow& window)
+//{
+//
+//}
+

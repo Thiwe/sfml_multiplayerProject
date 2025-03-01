@@ -1,3 +1,5 @@
+#pragma once
+
 #include "GameManager.h"
 #include <algorithm>
 #include <iostream>
@@ -7,22 +9,25 @@ GameManager::GameManager(sf::Vector2u screenSize, sf::RenderWindow& window)
     initialize();
 }
 
+GameManager::~GameManager() {
+    // Clean up all entities
+    for (auto entity : entities) {
+        delete entity;
+    }
+}
+
 void GameManager::initialize() {
     // Load resources
     loadResources();
-
-    // Create player
-    entities.push_back(new Player);
+    Player* player = new Player();
+    player->setGameManager(this);  // Connect player to game manager
+    entities.push_back(player);
 }
 
 void GameManager::loadResources() {
     /*if (!bulletTexture.loadFromFile("../arcaneMagicProjectile/02/Arcane_Effect_1.png")) {
         std::cout << "Failed to load bullet texture!" << std::endl;
     }*/
-
-    // Load other textures as needed like astroids later
-    std::vector<Entity*> entities{};
-    entities.push_back(new Player());
 }
 
 void GameManager::handleInput() {
@@ -36,15 +41,28 @@ void GameManager::handleInput() {
 
 void GameManager::update(float deltaTime_)
 {
-    window.clear();
-
+    
     for (auto et : entities) {
         et->update(deltaTime_);
-        et->render(window);
+    }
+    for (auto projectile : projectiles) {
+        projectile->update(deltaTime_);
     }
 }
 
 void GameManager::render()
 {
-    window.display();
+    // Render all game entities
+    for (auto entity : entities) {
+        entity->render(window);
+    }
+    for (auto projectile : projectiles) {
+        projectile->render(window);
+    }
+}
+
+void GameManager::spawnProjectile(sf::Vector2f bulletPos, sf::Angle angle, sf::Vector2f bulletVel)
+{
+    bullet* projectile = new bullet(bulletPos, angle, bulletVel, sf::Vector2f{1,1});
+    projectiles.push_back(projectile);
 }
