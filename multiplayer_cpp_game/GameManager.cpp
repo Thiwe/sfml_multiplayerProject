@@ -6,6 +6,9 @@
 
 GameManager::GameManager(sf::Vector2u screenSize, sf::RenderWindow& window)
     : screenSize(screenSize), running(true), window(window) {
+
+    // Create the projectile factory
+    projectileFactory = new ProjectileFactory();
     initialize();
 }
 
@@ -14,20 +17,16 @@ GameManager::~GameManager() {
     for (auto entity : entities) {
         delete entity;
     }
+
+    // Don't delete projectiles -> managed by the factory
+    delete projectileFactory;
 }
 
 void GameManager::initialize() {
-    // Load resources
-    loadResources();
+
     Player* player = new Player();
     player->setGameManager(this);  // Connect player to game manager
     entities.push_back(player);
-}
-
-void GameManager::loadResources() {
-    /*if (!bulletTexture.loadFromFile("../arcaneMagicProjectile/02/Arcane_Effect_1.png")) {
-        std::cout << "Failed to load bullet texture!" << std::endl;
-    }*/
 }
 
 void GameManager::handleInput() {
@@ -45,8 +44,29 @@ void GameManager::update(float deltaTime_)
     for (auto et : entities) {
         et->update(deltaTime_);
     }
-    for (auto projectile : projectiles) {
+
+    // Update all active projectiles 
+    // (regular for loop since last function needed an iterator 
+    // and i did not have the energy to figure out how i could 
+    // turn auto range based for loop into iterator)
+    for (size_t i = 0; i < activeProjectiles.size(); i++) {
+        baseProjectile* projectile = activeProjectiles[i];
+
+        // Update projectile
         projectile->update(deltaTime_);
+
+        // Decrease lifetime
+        projectile->decreaseLifetime(deltaTime_);
+
+        // Check if projectile has expired
+        if (projectile->getLifetime() <= 0) {
+            // Return to factory and remove from active list
+            projectileFactory->recycleProjectile(projectile);
+            activeProjectiles.erase(activeProjectiles.begin() + i);
+            i--; // Adjust index since we removed an element
+        }
+
+        // todo: check for collisions
     }
 }
 
@@ -56,13 +76,23 @@ void GameManager::render()
     for (auto entity : entities) {
         entity->render(window);
     }
-    for (auto projectile : projectiles) {
+    for (auto projectile : activeProjectiles) {
         projectile->render(window);
     }
 }
 
-void GameManager::spawnProjectile(sf::Vector2f bulletPos, sf::Angle angle, sf::Vector2f bulletVel)
-{
-    bullet* projectile = new bullet(bulletPos, angle, bulletVel, sf::Vector2f{1,1});
-    projectiles.push_back(projectile);
+void GameManager::spawnProjectile(sf::Vector2f position, sf::Angle angle, sf::Vector2f velocity,
+    const std::string& type) {
+    // Use factory to create the projectile
+    baseProjectile* newProjectile = projectileFactory->createProjectile(
+        type,
+        position,
+        angle,
+        velocity
+    );
+
+    if (newProjectile) {
+        // Add to active projectiles
+        activeProjectiles.push_back(newProjectile);
+    }
 }

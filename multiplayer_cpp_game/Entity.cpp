@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "Entity.h"
+#include "VectorMath.h"
 
 
 
@@ -82,6 +83,8 @@ void Player::render(sf::RenderWindow& window) {
     wrapAround(sf::Vector2u(1200, 900)); // call wrap function after updating position
 
     window.draw(sprite, transform);
+
+    //DrawDebugCircle(window, position, angle, sf::Color::Blue);
 }
 
 void Player::update(float deltaTime) {
@@ -152,19 +155,41 @@ void Player::fire()
     if (!gameManager) return;
 
     //calculate bullet spawn position (offset from plater center)
-    float offsetDistance = 50.f;
+    /*
+    O-----------------------------------------------> X
+    |
+    |
+    |
+    |
+    |           --
+    |        x |  |
+    |          |  |
+    |           --
+    |
+    |
+    |
+    |
+    v
+    Y
+    */
+    sf::Vector2f offsetDistance = { -54.f, -20.f };
     sf::Vector2f bulletPos = position;
-    bulletPos.x += offsetDistance * sin(angle.asRadians());
-    bulletPos.y -= offsetDistance * cos(angle.asRadians());
+    bulletPos.x += offsetDistance.x + vectorMathComponent->GetForwardVector(angle).x;
+    bulletPos.y += offsetDistance.y + vectorMathComponent->GetForwardVector(angle).y;
+
+
+    /*bulletPos.x += offsetDistance.x * sin(angle.asRadians());      
+    bulletPos.y -= offsetDistance.y * cos(angle.asRadians());*/
 
     //calculate bullet velocity
     float bulletSpeed = 0.4f;
     sf::Vector2f bulletVel;
-    bulletVel.x = -bulletSpeed * sin(angle.asRadians());
-    bulletVel.y = bulletSpeed * cos(angle.asRadians());
+    bulletVel.x = -bulletSpeed * vectorMathComponent->GetForwardVector(angle).x;
+    bulletVel.y = -bulletSpeed * vectorMathComponent->GetForwardVector(angle).y;
 
-    // Tell game manager to spawn the bullet
-    gameManager->spawnProjectile(bulletPos, angle, bulletVel);
+
+    // Tell game manager to spawn the projectile
+    gameManager->spawnProjectile(bulletPos, angle, bulletVel, "bullet");
 }
 
 
@@ -183,7 +208,7 @@ void baseProjectile::render(sf::RenderWindow& window)
     wrapAround(sf::Vector2u(1200, 900)); // call wrap function after updating position
 
     window.draw(sprite, transform);
-
+    
 }
 
 void baseProjectile::update(float deltaTime)
@@ -199,10 +224,6 @@ void baseProjectile::update(float deltaTime)
     position.x += velocity.x * SpriteScale;
     position.y += velocity.y * SpriteScale;
     
-    lifetime -= deltaTime;
-    if ((getLifetime()) < 0) {
-        delete this;
-    }
 }
 
 bullet::bullet(sf::Vector2f spawnPos, sf::Angle spawnAngle, sf::Vector2f spawnVel, sf::Vector2f spriteScale_) :

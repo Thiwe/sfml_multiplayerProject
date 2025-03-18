@@ -139,11 +139,16 @@
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="multiplayer_cpp_game.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="ProjectileFactory.cpp" />
+    <ClCompile Include="VectorMath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Command.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="GameManager.h" />
+    <ClInclude Include="ObjectPool.h" />
+    <ClInclude Include="ProjectileFactory.h" />
+    <ClInclude Include="VectorMath.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

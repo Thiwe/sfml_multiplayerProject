@@ -6,6 +6,8 @@
 #include <SFML/Graphics.hpp>
 #include <ctime> 
 #include "GameManager.h"
+#include "VectorMath.h"
+
 
 class GameManager;
 
@@ -28,6 +30,23 @@ public:
 
     // Set reference to game manager
     void setGameManager(GameManager* manager) { gameManager = manager; }
+
+    void DrawDebugCircle(sf::RenderWindow& window, sf::Vector2f position, sf::Angle angle, sf::Color fillcolor) {
+        sf::CircleShape shape(50.f);
+        shape.setFillColor(sf::Color(150, 50, 250));
+
+        // set a 10-pixel wide orange outline
+        shape.setOutlineThickness(10.f);
+        shape.setOutlineColor(sf::Color(250, 150, 100));
+
+        sf::Transform transform;
+        transform.translate(position).rotate(angle);
+        wrapAround(sf::Vector2u(1200, 900)); // call wrap function after updating position
+
+        window.draw(shape, transform);
+    }
+
+    VectorMath* vectorMathComponent; 
 
 protected:
     sf::Texture texture;
@@ -72,18 +91,40 @@ private:
 
 };
 
+
+//========== ROJECTILE CLASS ============//
 class baseProjectile : public PhysicsEntity {
 public: 
     baseProjectile();
+    
 
     void render(sf::RenderWindow& window) override;
     void update(float deltaTime) override;
-    float getLifetime() const { return lifetime; }
+
     float getSpeed() const { return speed; }
 
+    // Lifetime management
+    float getLifetime() const { return lifetime; }
+    void decreaseLifetime(float deltaTime) { lifetime -= deltaTime; }
+    virtual void resetLifetime() { lifetime = 1.f; } // Reset to initial value
+
+    // Object pooling support
+    virtual void activate() { active = true; }
+    virtual void deactivate() { active = false; }
+    virtual bool isActive() const { return active; }
+
+    // Reset method for reusing object
+    virtual void reset(sf::Vector2f newPos, sf::Angle newAngle, sf::Vector2f newVel) {
+        position = newPos;
+        angle = newAngle;
+        velocity = newVel;
+        resetLifetime();
+    }
+
 protected:
-    float lifetime = 0.4f;
+    float lifetime = 1.f;
     float speed = 10.f; // Speed when moving
+    bool active = true;
 };
 
 class bullet : public baseProjectile {
