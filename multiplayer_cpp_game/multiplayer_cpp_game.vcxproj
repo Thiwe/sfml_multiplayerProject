@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -139,6 +139,7 @@
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="multiplayer_cpp_game.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="ProjectileFactory.cpp" />
     <ClCompile Include="VectorMath.cpp" />
   </ItemGroup>
@@ -146,6 +147,8 @@
     <ClInclude Include="Command.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="GameManager.h" />
+    <ClInclude Include="NetworkHeader.h" />
+    <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="ObjectPool.h" />
     <ClInclude Include="ProjectileFactory.h" />
     <ClInclude Include="VectorMath.h" />
